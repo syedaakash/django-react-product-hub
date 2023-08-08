@@ -6,13 +6,13 @@ from django.contrib.auth.models import User,auth
 from django.contrib import messages
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from rest_framework.parsers import JSONParser
-from django.http.response import JsonResponse
 
 from base.models import Products
 from base.api.serializers import ProductSerializer
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod

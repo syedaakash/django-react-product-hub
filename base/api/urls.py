@@ -11,7 +11,7 @@ urlpatterns = [
     # path('register/', views.register),
     re_path(r'^register$',views.register),
     re_path(r'^product/$',views.product),
-    # path('product/<name>', views.product),
+    # path('product/<id>/<is_sel>', views.product),
     # re_path(r'^product/(?P<id>\d+)/$',views.product),
     path('token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
