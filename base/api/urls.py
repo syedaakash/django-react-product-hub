@@ -8,8 +8,7 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = [
     path('', views.getRoutes),
-    # path('register/', views.register),
-    re_path(r'^register$',views.register),
+    path('register', views.register),
     re_path(r'^product/$',views.product),
     # path('product/<id>/<is_sel>', views.product),
     # re_path(r'^product/(?P<id>\d+)/$',views.product),

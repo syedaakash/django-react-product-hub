@@ -1,3 +1,4 @@
+import json
 from django.http import JsonResponse, HttpResponse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -41,35 +42,58 @@ def getRoutes(request):
 
 @csrf_exempt
 def register(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        email = request.POST['email']
-        password = request.POST['password']
-        password1 = request.POST['password1']
-        if password == password1:
-            if User.objects.filter(email=email).exists():
-                messages.info(request,'Email already exists')
-                return redirect('register')
-            elif User.objects.filter(username=username).exists():
-                messages.info(request,'Username already exists')
-                return redirect('register')
+    try:
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            username = data['username']
+            email = data['email']
+            password = data['password']
+            password1 = data['password1']
+            if password == password1:
+                if User.objects.filter(email=email).exists():
+                    messages.info(request,'Email already exists')
+                    return HttpResponse(status=400)
+                elif User.objects.filter(username=username).exists():
+                    messages.info(request,'Username already exists')
+                    return HttpResponse(status=400)
+                else:
+                    user = User.objects.create_user(username=username,email=email,password=password)
+                    user.save();
+                    return JsonResponse({"message": "success"},safe=False)
             else:
-                user = User.objects.create_user(username=username,email=email,password=password)
-                user.save();
-                return redirect('login')
+                messages.info(request,' Password not the same')
+                return HttpResponse(status=400)
         else:
-            messages.info(request,' Password not the same')
-            return redirect('register')
-    else:
-        return redirect('register')
+            return HttpResponse(status=400)
+    except Exception:
+        return HttpResponse(status=400)
+
 
 
 @csrf_exempt
 def product(request):
-    if request.method=='GET':
+    if request.method == 'GET':
+        # if id:
+        #     selected_product = Products.objects.get(pk=id)
+        #     if 'selected_products' in request.session:
+        #         if id not in request.session['selected_products']:
+        #             if is_sel:
+        #                 request.session['selected_products'].append(id)
+        #         else:
+        #             if not is_sel:
+        #                 request.session['selected_products'].remove(id)
+        #     else:
+        #         if is_sel:
+        #             request.session['selected_products'] = [id]
+        #     product_serializer=ProductSerializer(selected_product)
+        #     request.session.modified = True
+        #     selected_products = request.session['selected_products'] if 'selected_products' in request.session else []
+        #     context = {'product_serializer': product_serializer.data, 'selected_products': selected_products}
+        #     return JsonResponse(context,safe=False)
+        # else:
         products = Products.objects.all()
-        products_serializer=ProductSerializer(products,many=True)
-        return JsonResponse(products_serializer.data,safe=False)
+        products_serializer = ProductSerializer(products, many=True)
+        return JsonResponse(products_serializer.data, safe=False)
     elif request.method == 'POST':
         product_data = JSONParser().parse(request)
         product_serializer = ProductSerializer(data=product_data)
