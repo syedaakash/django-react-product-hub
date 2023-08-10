@@ -23,8 +23,6 @@ search for items, and make selections, with all changes being stored in an SQLit
      pip install -r requirements.txt
   - Apply database migrations:
     python manage.py migrate
-  - Run the development server:
-    python manage.py runserver
     
 4. **changes made in settings.py**
     INSTALLED_APPS = [
@@ -89,6 +87,9 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+- Run the development server:
+    python manage.py runserver
 
 
 5. **Set up the React frontend:**
