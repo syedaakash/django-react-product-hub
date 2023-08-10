@@ -2,10 +2,9 @@ import json
 from django.http import JsonResponse, HttpResponse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from django.shortcuts import redirect, render
-from django.contrib.auth.models import User,auth
+from django.contrib.auth.models import User
 from django.contrib import messages
-from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 
 from base.models import Products
@@ -49,51 +48,40 @@ def register(request):
             email = data['email']
             password = data['password']
             password1 = data['password1']
-            if password == password1:
-                if User.objects.filter(email=email).exists():
-                    messages.info(request,'Email already exists')
-                    return HttpResponse(status=400)
-                elif User.objects.filter(username=username).exists():
-                    messages.info(request,'Username already exists')
-                    return HttpResponse(status=400)
+            if username and email and password and password1:
+                if password == password1:
+                    if User.objects.filter(email=email).exists():
+                        message = 'Email already exists'
+                        return HttpResponse(message, status=400)
+                    elif User.objects.filter(username=username).exists():
+                        message = 'Username already exists'
+                        return HttpResponse(message, status=400)
+                    else:
+                        user = User.objects.create_user(username=username,email=email,password=password)
+                        user.save();
+                        message = 'User created successfully'
+                        return JsonResponse(message, safe=False)
                 else:
-                    user = User.objects.create_user(username=username,email=email,password=password)
-                    user.save();
-                    return JsonResponse({"message": "success"},safe=False)
+                    message = 'Password not the same'
+                    return HttpResponse(message, status=400)
             else:
-                messages.info(request,' Password not the same')
-                return HttpResponse(status=400)
+                message = 'Please fill the required fields'
+                return HttpResponse(message, status=400)
         else:
             return HttpResponse(status=400)
     except Exception:
         return HttpResponse(status=400)
 
 
-
 @csrf_exempt
-def product(request):
+def product(request, name=None):
     if request.method == 'GET':
-        # if id:
-        #     selected_product = Products.objects.get(pk=id)
-        #     if 'selected_products' in request.session:
-        #         if id not in request.session['selected_products']:
-        #             if is_sel:
-        #                 request.session['selected_products'].append(id)
-        #         else:
-        #             if not is_sel:
-        #                 request.session['selected_products'].remove(id)
-        #     else:
-        #         if is_sel:
-        #             request.session['selected_products'] = [id]
-        #     product_serializer=ProductSerializer(selected_product)
-        #     request.session.modified = True
-        #     selected_products = request.session['selected_products'] if 'selected_products' in request.session else []
-        #     context = {'product_serializer': product_serializer.data, 'selected_products': selected_products}
-        #     return JsonResponse(context,safe=False)
-        # else:
-        products = Products.objects.all()
-        products_serializer = ProductSerializer(products, many=True)
-        return JsonResponse(products_serializer.data, safe=False)
+        if name != 'no-prod':
+            products = Products.objects.filter(name__contains=name)
+            products_serializer = ProductSerializer(products, many=True)
+            return JsonResponse(products_serializer.data, safe=False)
+        else:
+            return JsonResponse([], safe=False)
     elif request.method == 'POST':
         product_data = JSONParser().parse(request)
         product_serializer = ProductSerializer(data=product_data)
